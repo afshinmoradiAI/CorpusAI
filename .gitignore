@@ -3,6 +3,7 @@
 .env.local
 CLAUDE.local.md
 .claude/settings.local.json
+.claude/worktrees/
  
 # Python
 __pycache__/
@@ -29,3 +30,6 @@ desktop.ini
  
 # Logs
 *.log
+
+# Uploads
+backend/uploads/
