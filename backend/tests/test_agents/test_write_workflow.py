@@ -59,8 +59,8 @@ CANNED: dict[str, str] = {
 
 
 @pytest.fixture
-async def loaded_store() -> tuple[ReferenceStore, str, str]:
-    store = ReferenceStore()
+async def loaded_store(tmp_path) -> tuple[ReferenceStore, str, str]:
+    store = ReferenceStore(tmp_path / "test.sqlite")
     pdf = _pdf("CRISPR off-target effects in human T cells. " * 50)
     meta = await store.create_set([("paper1.pdf", pdf)])
     ref_id = meta.documents[0].ref_id

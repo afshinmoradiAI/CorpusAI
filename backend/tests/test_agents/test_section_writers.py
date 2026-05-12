@@ -7,11 +7,10 @@ test covers the rest.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import pytest
 
 from app.agents import BiologyReviewer, IntroductionWriter
+from app.agents.base import BaseAgent
 from app.schemas.paper import (
     BiologyReview,
     ReviewerInput,
@@ -22,25 +21,19 @@ from app.schemas.paper import (
 from app.schemas.papers import Chunk
 
 
-@dataclass
-class _FakeResponse:
-    text: str
-
-
 @pytest.mark.asyncio
 async def test_introduction_writer_passes_chunks_through_renderer(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    captured: dict[str, str] = {}
+
+    async def fake_run(self: BaseAgent, payload):  # type: ignore[no-untyped-def]
+        captured["message"] = self.render_input(payload)
+        return self._parse('{"content":"draft introduction body."}')
+
+    monkeypatch.setattr(BaseAgent, "run", fake_run)
+
     agent = IntroductionWriter()
-
-    captured = {}
-
-    async def fake_run(message: str) -> _FakeResponse:
-        captured["message"] = message
-        return _FakeResponse(text='{"content":"draft introduction body."}')
-
-    monkeypatch.setattr(agent._agent, "run", fake_run)
-
     chunks = [
         Chunk(chunk_id="c1", ref_id="r1", page=2, text="CRISPR background context"),
     ]
@@ -62,18 +55,16 @@ async def test_introduction_writer_passes_chunks_through_renderer(
 async def test_biology_reviewer_parses_structured_review(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    agent = BiologyReviewer()
-
-    async def fake_run(_message: str) -> _FakeResponse:
-        return _FakeResponse(
-            text=(
-                '{"summary":"OK","overall_score":3,'
-                '"strengths":["clear aim"],'
-                '"issues":[{"severity":"major","section":"methods","comment":"add controls"}]}'
-            )
+    async def fake_run(self: BaseAgent, _payload):  # type: ignore[no-untyped-def]
+        return self._parse(
+            '{"summary":"OK","overall_score":3,'
+            '"strengths":["clear aim"],'
+            '"issues":[{"severity":"major","section":"methods","comment":"add controls"}]}'
         )
 
-    monkeypatch.setattr(agent._agent, "run", fake_run)
+    monkeypatch.setattr(BaseAgent, "run", fake_run)
+
+    agent = BiologyReviewer()
     review = await agent.run(ReviewerInput(topic="t", paper_markdown="# paper"))
     assert isinstance(review, BiologyReview)
     assert review.overall_score == 3

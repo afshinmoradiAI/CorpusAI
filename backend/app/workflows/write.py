@@ -33,6 +33,10 @@ from app.agents import (
     StatisticsReviewer,
 )
 from app.agents.section_writers import _SectionWriter
+from app.core.cache import LRUCache, hash_payload
+from app.core.config import get_settings
+from app.core.logging import get_logger
+from app.core.usage import SpendCapExceeded, usage_scope
 from app.schemas.paper import (
     CANONICAL_ORDER,
     FormattedReference,
@@ -57,6 +61,7 @@ EventKind = Literal[
     "paper_assembled",
     "review_started",
     "review_completed",
+    "usage",
     "completed",
     "error",
 ]
@@ -86,21 +91,75 @@ _SECTION_QUERIES: dict[SectionName, str] = {
 
 _TOP_K_PER_SECTION = 6
 
+_log = get_logger(__name__)
+_result_cache: LRUCache[WriteResult] = LRUCache(get_settings().result_cache_size)
+
 
 async def run_write(
     request: WriteRequest,
     *,
     store: ReferenceStore | None = None,
     skip_review: bool = False,
+    user_id: str | None = None,
 ) -> AsyncIterator[WriteEvent]:
     store = store or get_reference_store()
-    meta = store.get_meta(request.set_id)
-    index = store.get_index(request.set_id)
+    meta = store.get_meta(request.set_id, user_id=user_id)
+    index = store.get_index(request.set_id, user_id=user_id)
     if meta is None or index is None:
         yield WriteEvent("error", {"message": f"Unknown set_id: {request.set_id}"})
         return
 
     yield WriteEvent("started", {"topic": request.topic, "set_id": request.set_id})
+
+    cache_key = hash_payload(
+        {
+            "kind": "write",
+            "request": request.model_dump(),
+            "skip_review": skip_review,
+            "user_id": user_id,
+        }
+    )
+    cached = _result_cache.get(cache_key)
+    if cached is not None:
+        _log.info("write_cache_hit", topic=request.topic, set_id=request.set_id)
+        yield WriteEvent("completed", cached.model_dump())
+        return
+
+    settings = get_settings()
+    try:
+        with usage_scope(settings.max_tokens_per_request) as scope:
+            async for event in _run_write_inner(
+                request, store=store, skip_review=skip_review, user_id=user_id
+            ):
+                if event.kind == "completed":
+                    _result_cache.put(
+                        cache_key, WriteResult.model_validate(event.payload)
+                    )
+                    yield WriteEvent("usage", scope.summary())
+                yield event
+            _log.info(
+                "write_completed",
+                topic=request.topic,
+                input_tokens=scope.input_tokens,
+                output_tokens=scope.output_tokens,
+                cache_read=scope.cache_read_tokens,
+                requests=scope.requests,
+                estimated_cost_usd=scope.estimated_cost_usd(),
+            )
+    except SpendCapExceeded as exc:
+        yield WriteEvent("error", {"message": str(exc), "type": "SpendCapExceeded"})
+
+
+async def _run_write_inner(
+    request: WriteRequest,
+    *,
+    store: ReferenceStore,
+    skip_review: bool,
+    user_id: str | None,
+) -> AsyncIterator[WriteEvent]:
+    meta = store.get_meta(request.set_id, user_id=user_id)
+    index = store.get_index(request.set_id, user_id=user_id)
+    assert meta is not None and index is not None  # validated by caller
 
     selected = {s for s in request.sections}
     drafted: dict[SectionName, str] = {}

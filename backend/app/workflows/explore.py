@@ -23,6 +23,10 @@ from app.agents import (
     PaperSummariser,
     TopicAnalyser,
 )
+from app.core.cache import LRUCache, hash_payload
+from app.core.config import get_settings
+from app.core.logging import get_logger
+from app.core.usage import SpendCapExceeded, usage_scope
 from app.schemas.research import (
     DiscussionWriterInput,
     GapFinderInput,
@@ -32,10 +36,14 @@ from app.schemas.research import (
     PaperSummary,
     RawPaper,
     ResearchOutput,
-    TopicAnalysis,
     TopicRequest,
 )
 from app.services import search_papers
+
+_log = get_logger(__name__)
+_result_cache: LRUCache[ResearchOutput] = LRUCache(
+    get_settings().result_cache_size
+)
 
 EventKind = Literal[
     "started",
@@ -46,6 +54,7 @@ EventKind = Literal[
     "idea_generated",
     "method_designed",
     "discussion_written",
+    "usage",
     "completed",
     "error",
 ]
@@ -69,6 +78,46 @@ async def run_explore(
     """Drive the full Explore pipeline, yielding one event per step."""
     yield ExploreEvent("started", {"topic": request.topic})
 
+    cache_key = hash_payload(
+        {"kind": "explore", "request": request.model_dump(), "paper_limit": paper_limit}
+    )
+    cached = _result_cache.get(cache_key)
+    if cached is not None:
+        _log.info("explore_cache_hit", topic=request.topic)
+        yield ExploreEvent("completed", cached.model_dump())
+        return
+
+    settings = get_settings()
+    try:
+        with usage_scope(settings.max_tokens_per_request) as scope:
+            async for event in _run_explore_inner(
+                request, paper_limit=paper_limit, search_fn=search_fn
+            ):
+                if event.kind == "completed":
+                    _result_cache.put(
+                        cache_key, ResearchOutput.model_validate(event.payload)
+                    )
+                    yield ExploreEvent("usage", scope.summary())
+                yield event
+            _log.info(
+                "explore_completed",
+                topic=request.topic,
+                input_tokens=scope.input_tokens,
+                output_tokens=scope.output_tokens,
+                cache_read=scope.cache_read_tokens,
+                requests=scope.requests,
+                estimated_cost_usd=scope.estimated_cost_usd(),
+            )
+    except SpendCapExceeded as exc:
+        yield ExploreEvent("error", {"message": str(exc), "type": "SpendCapExceeded"})
+
+
+async def _run_explore_inner(
+    request: TopicRequest,
+    *,
+    paper_limit: int,
+    search_fn: SearchFn,
+) -> AsyncIterator[ExploreEvent]:
     analysis = await TopicAnalyser().run(request)
     yield ExploreEvent(
         "topic_analysed",

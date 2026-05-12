@@ -4,8 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.11,<3.12"
 dependencies = [
-    "agent-framework>=1.2.2",
-    "agent-framework-anthropic>=1.0.0b260429",
+    "pydantic-ai-slim[anthropic]>=0.0.50",
     "fastapi>=0.136.1",
     "httpx>=0.28.1",
     "pydantic>=2.13.3",
@@ -15,7 +14,11 @@ dependencies = [
     "python-dotenv>=1.2.2",
     "python-multipart>=0.0.20",
     "rank-bm25>=0.2.2",
+    "slowapi>=0.1.9",
     "sse-starlette>=2.1.3",
+    "structlog>=24.4.0",
+    "mcp>=1.2.0",
+    "tenacity>=9.0.0",
     "uvicorn[standard]>=0.46.0",
 ]
 

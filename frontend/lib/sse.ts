@@ -2,7 +2,22 @@
 // Browser EventSource only supports GET, so we parse the SSE stream manually
 // from a fetch ReadableStream. Each yielded value is one parsed event.
 
+import { authHeaders } from "./api";
 import type { SseEvent } from "./types";
+
+export class AuthRequiredError extends Error {
+  constructor(message = "Authentication failed — open Settings to enter your API key.") {
+    super(message);
+    this.name = "AuthRequiredError";
+  }
+}
+
+export class RateLimitError extends Error {
+  constructor(message = "Rate limit exceeded — wait a minute and try again.") {
+    super(message);
+    this.name = "RateLimitError";
+  }
+}
 
 export async function* streamSse(
   url: string,
@@ -11,11 +26,17 @@ export async function* streamSse(
 ): AsyncIterable<SseEvent> {
   const response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "text/event-stream",
+      ...authHeaders(),
+    },
     body: JSON.stringify(body),
     signal,
   });
   if (!response.ok || !response.body) {
+    if (response.status === 401) throw new AuthRequiredError();
+    if (response.status === 429) throw new RateLimitError();
     const message = await response.text().catch(() => response.statusText);
     throw new Error(`Stream failed (${response.status}): ${message}`);
   }

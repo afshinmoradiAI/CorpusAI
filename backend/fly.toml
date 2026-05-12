@@ -7,11 +7,18 @@ primary_region = "syd"  # change to your closest fly region (e.g. iad, fra, nrt)
 
 [env]
   LOG_LEVEL = "INFO"
-  # ANTHROPIC_API_KEY is set via `fly secrets set` — never commit it.
-  # CORS_ALLOWED_ORIGINS is set the same way once you know your Vercel URL.
+  DATA_DIR = "/data"
+  # ANTHROPIC_API_KEY, APP_API_KEY, CORS_ALLOWED_ORIGINS are set via
+  # `fly secrets set` — never commit them.
 
-# One always-on machine. The in-memory ReferenceStore is per-process,
-# so we cannot horizontally scale until that store is externalised.
+# Persistent SQLite store. Create with:
+#   fly volumes create corpusai_data --size 1 --region <your-region>
+[mounts]
+  source = "corpusai_data"
+  destination = "/data"
+
+# One always-on machine. SQLite is local to the volume, so horizontal
+# scaling needs a different storage backend (e.g. Postgres).
 [http_service]
   internal_port = 8000
   force_https = true

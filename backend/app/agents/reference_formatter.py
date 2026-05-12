@@ -7,6 +7,7 @@ do not have a structured CSL parser yet.
 """
 
 from app.agents.base import BaseAgent
+from app.core.config import get_settings
 from app.schemas.paper import (
     ReferenceFormatterInput,
     ReferenceFormatterOutput,
@@ -16,6 +17,7 @@ from app.schemas.paper import (
 class ReferenceFormatter(BaseAgent[ReferenceFormatterInput, ReferenceFormatterOutput]):
     prompt_name = "reference_formatter"
     output_model = ReferenceFormatterOutput
+    model = get_settings().anthropic_fast_model  # Haiku: citation formatting
 
     def render_input(self, payload: ReferenceFormatterInput) -> str:
         lines = ["Reference papers (formatted from uploaded PDFs):"]

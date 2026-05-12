@@ -1,12 +1,14 @@
 """PaperSummariser — converts a RawPaper (title + abstract) into a PaperSummary."""
 
 from app.agents.base import BaseAgent
+from app.core.config import get_settings
 from app.schemas.research import PaperSummariserInput, PaperSummary
 
 
 class PaperSummariser(BaseAgent[PaperSummariserInput, PaperSummary]):
     prompt_name = "paper_summariser"
     output_model = PaperSummary
+    model = get_settings().anthropic_fast_model  # Haiku: structured extraction
 
     def render_input(self, payload: PaperSummariserInput) -> str:
         p = payload.paper

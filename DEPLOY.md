@@ -34,16 +34,26 @@ cd backend
 fly launch --no-deploy --copy-config --name <your-app-name>
 # This registers the app on Fly without launching yet.
 
+# Create the persistent volume for the SQLite reference store (~$0.15/GB/mo)
+fly volumes create corpusai_data --size 1 --region <your-region>
+
 fly secrets set \
   ANTHROPIC_API_KEY=sk-ant-... \
-  CORS_ALLOWED_ORIGINS=http://localhost:3000
+  APP_API_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))") \
+  CORS_ALLOWED_ORIGINS=https://<your-vercel-domain>.vercel.app \
+  RATE_LIMIT_PER_MINUTE=10 \
+  ENVIRONMENT=production
 
 fly deploy
 
 # Verify
 fly status
 curl https://<your-app-name>.fly.dev/health
-# → {"status":"ok","model":"claude-sonnet-4-6","api_key_configured":"yes"}
+# → {"status":"ok"}
+
+# Retrieve the APP_API_KEY for the frontend
+fly secrets list  # shows digest only; use `fly ssh console` then `echo $APP_API_KEY`
+#   OR just store the value you generated above — you'll need it for Vercel.
 ```
 
 If the build fails on dependency resolution, run `uv lock` locally and commit the
@@ -59,7 +69,9 @@ The frontend is a stock Next.js 14 app. Vercel auto-detects everything.
 
 1. Go to https://vercel.com/new and import the GitHub repo.
 2. Set **Root Directory** to `frontend`.
-3. Add env var **`NEXT_PUBLIC_API_URL`** = `https://<your-app-name>.fly.dev`.
+3. Add env vars:
+   - **`NEXT_PUBLIC_API_URL`** = `https://<your-app-name>.fly.dev`
+   - **`NEXT_PUBLIC_API_KEY`** = (the same value you set as `APP_API_KEY` on Fly)
 4. Click **Deploy**.
 
 **Via CLI:**
@@ -67,11 +79,15 @@ The frontend is a stock Next.js 14 app. Vercel auto-detects everything.
 ```bash
 cd frontend
 vercel --prod
-# Answer prompts; set NEXT_PUBLIC_API_URL when asked, or:
-vercel env add NEXT_PUBLIC_API_URL production
-# (paste https://<your-app-name>.fly.dev)
+vercel env add NEXT_PUBLIC_API_URL production   # paste Fly URL
+vercel env add NEXT_PUBLIC_API_KEY production   # paste APP_API_KEY value
 vercel --prod
 ```
+
+> ⚠️ `NEXT_PUBLIC_*` vars are bundled into the client. The API key is therefore
+> **not a server secret** — it's a shared key that gates public access. Combined
+> with `RATE_LIMIT_PER_MINUTE`, this is enough to prevent random abuse. For real
+> per-user auth, add JWT/OAuth in a later iteration.
 
 ---
 

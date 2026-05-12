@@ -8,5 +8,4 @@ def test_health_endpoint() -> None:
     response = client.get("/health")
     assert response.status_code == 200
     body = response.json()
-    assert body["status"] == "ok"
-    assert "model" in body
+    assert body == {"status": "ok"}

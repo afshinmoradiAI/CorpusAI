@@ -1,12 +1,10 @@
 """Smoke tests for the five Phase-2 agents.
 
-Each test monkey-patches `agent._agent.run` to skip the live LLM call,
-then verifies the input renderer and JSON parser cooperate.
+Each test monkey-patches `BaseAgent.run` to skip the live LLM call, then
+verifies the input renderer + output parser cooperate (via `_parse`).
 """
 
 from __future__ import annotations
-
-from dataclasses import dataclass
 
 import pytest
 
@@ -17,6 +15,7 @@ from app.agents import (
     MethodDesigner,
     PaperSummariser,
 )
+from app.agents.base import BaseAgent
 from app.schemas.research import (
     DiscussionWriterInput,
     GapFinderInput,
@@ -29,28 +28,24 @@ from app.schemas.research import (
 )
 
 
-@dataclass
-class _FakeResponse:
-    text: str
+def _patch(
+    json_payload: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    async def fake_run(self: BaseAgent, _payload):  # type: ignore[no-untyped-def]
+        return self._parse(json_payload)
 
-
-def _patch(agent_obj, json_payload: str, monkeypatch: pytest.MonkeyPatch) -> None:
-    async def fake_run(_message: str) -> _FakeResponse:
-        return _FakeResponse(text=json_payload)
-
-    monkeypatch.setattr(agent_obj._agent, "run", fake_run)
+    monkeypatch.setattr(BaseAgent, "run", fake_run)
 
 
 @pytest.mark.asyncio
 async def test_paper_summariser(monkeypatch: pytest.MonkeyPatch) -> None:
-    agent = PaperSummariser()
     _patch(
-        agent,
         """{"title":"X","year":2024,"authors":["A"],
             "findings":["f1"],"methods":["m1"],"limitations":["l1"],
             "source_id":"s1"}""",
         monkeypatch,
     )
+    agent = PaperSummariser()
     result = await agent.run(
         PaperSummariserInput(
             paper=RawPaper(source_id="s1", title="X", abstract="abc", year=2024)
@@ -62,12 +57,11 @@ async def test_paper_summariser(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.asyncio
 async def test_gap_finder(monkeypatch: pytest.MonkeyPatch) -> None:
-    agent = GapFinder()
     _patch(
-        agent,
         '{"description":"no longitudinal data","evidence":["paper X is cross-sectional"]}',
         monkeypatch,
     )
+    agent = GapFinder()
     result = await agent.run(
         GapFinderInput(
             topic="t",
@@ -79,8 +73,8 @@ async def test_gap_finder(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.asyncio
 async def test_idea_generator(monkeypatch: pytest.MonkeyPatch) -> None:
+    _patch('{"idea":"do a longitudinal cohort..."}', monkeypatch)
     agent = IdeaGenerator()
-    _patch(agent, '{"idea":"do a longitudinal cohort..."}', monkeypatch)
     result = await agent.run(
         IdeaGeneratorInput(
             topic="t",
@@ -93,8 +87,8 @@ async def test_idea_generator(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.asyncio
 async def test_method_designer(monkeypatch: pytest.MonkeyPatch) -> None:
+    _patch('{"method":"recruit n=50 participants..."}', monkeypatch)
     agent = MethodDesigner()
-    _patch(agent, '{"method":"recruit n=50 participants..."}', monkeypatch)
     result = await agent.run(
         MethodDesignerInput(
             topic="t", gap=ResearchGap(description="d"), idea="i"
@@ -105,8 +99,8 @@ async def test_method_designer(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.asyncio
 async def test_discussion_writer(monkeypatch: pytest.MonkeyPatch) -> None:
+    _patch('{"discussion":"This work aims to..."}', monkeypatch)
     agent = ExploreDiscussionWriter()
-    _patch(agent, '{"discussion":"This work aims to..."}', monkeypatch)
     result = await agent.run(
         DiscussionWriterInput(
             topic="t", gap=ResearchGap(description="d"), idea="i", method="m"

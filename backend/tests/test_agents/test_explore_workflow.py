@@ -90,8 +90,12 @@ async def test_run_explore_emits_full_event_sequence(fake_search) -> None:
         "idea_generated",
         "method_designed",
         "discussion_written",
+        "usage",
         "completed",
     ]
+
+    usage_payload = events[-2].payload
+    assert {"input_tokens", "output_tokens", "estimated_cost_usd"} <= usage_payload.keys()
 
     final = events[-1].payload
     assert final["topic"] == "CRISPR off-target"
