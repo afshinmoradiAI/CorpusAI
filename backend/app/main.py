@@ -15,7 +15,13 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
-from app.api import routes_papers, routes_research
+from app.api import (
+    routes_arc,
+    routes_nhmrc,
+    routes_papers,
+    routes_research,
+    routes_thesis,
+)
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 from app.core.problem import (
@@ -90,6 +96,22 @@ app.include_router(
     routes_papers.router,
     dependencies=[Depends(verify_api_key)],
 )
+app.include_router(
+    routes_nhmrc.router,
+    dependencies=[Depends(verify_api_key)],
+)
+app.include_router(
+    routes_arc.router,
+    dependencies=[Depends(verify_api_key)],
+)
+app.include_router(
+    routes_thesis.router,
+    dependencies=[Depends(verify_api_key)],
+)
+# Public figure-fetch router: <img> tags in the browser cannot send the
+# X-API-Key header, so figure GETs rely on the 128-bit UUID4 figure_id
+# for unguessability rather than the global API key.
+app.include_router(routes_thesis.public_router)
 
 
 @app.get("/health")

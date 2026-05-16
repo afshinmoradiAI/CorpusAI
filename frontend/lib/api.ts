@@ -1,7 +1,7 @@
 // Plain fetch wrappers around the FastAPI backend.
 
 import { getApiKey, getUserId } from "./auth";
-import type { RefSet } from "./types";
+import type { RefSet, UploadedFigure } from "./types";
 
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -59,6 +59,21 @@ export async function deleteReferenceSet(setId: string): Promise<void> {
     const message = await res.text().catch(() => res.statusText);
     throwForStatus(res.status, `Delete failed (${res.status}): ${message}`);
   }
+}
+
+export async function uploadFigure(file: File): Promise<UploadedFigure> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${API_BASE}/api/thesis/upload-figure`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: form,
+  });
+  if (!res.ok) {
+    const message = await res.text().catch(() => res.statusText);
+    throwForStatus(res.status, `Figure upload failed (${res.status}): ${message}`);
+  }
+  return res.json();
 }
 
 export async function exportDocx(
