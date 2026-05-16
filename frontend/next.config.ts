@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Emits a self-contained server bundle at .next/standalone — required
+  // by the production Dockerfile (multi-cloud deployment).
+  output: "standalone",
 };
 
 export default nextConfig;

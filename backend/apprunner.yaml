@@ -1,0 +1,29 @@
+# AWS App Runner configuration for the CorpusAI backend.
+#
+# Usage:
+#   1. Push this repo to GitHub.
+#   2. In the AWS Console, create an App Runner service from this repo.
+#   3. Choose "Use configuration file" and point at backend/apprunner.yaml.
+#   4. Set the ANTHROPIC_API_KEY secret in the service environment.
+#
+# Docs: https://docs.aws.amazon.com/apprunner/latest/dg/config-file.html
+
+version: 1.0
+runtime: docker
+build:
+  commands:
+    build:
+      - echo "Image is built from backend/Dockerfile"
+run:
+  runtime-version: latest
+  command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers
+  network:
+    port: 8000
+    env: PORT
+  env:
+    - name: PYTHONUNBUFFERED
+      value: "1"
+  # Secrets (set these in the App Runner console, not here):
+  #   ANTHROPIC_API_KEY
+  #   API_KEY            (auth token for the FastAPI service)
+  #   ALLOWED_ORIGINS    (frontend URL)

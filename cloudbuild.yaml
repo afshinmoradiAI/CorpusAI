@@ -1,0 +1,115 @@
+# Google Cloud Build pipeline — builds both services and deploys them to Cloud Run.
+#
+# One-time setup:
+#   1. gcloud config set project YOUR_PROJECT_ID
+#   2. gcloud services enable cloudbuild.googleapis.com run.googleapis.com \
+#                              artifactregistry.googleapis.com secretmanager.googleapis.com
+#   3. gcloud artifacts repositories create corpusai --repository-format=docker \
+#                                                   --location=us-central1
+#   4. Store secrets in Secret Manager:
+#        echo -n "sk-ant-..." | gcloud secrets create anthropic-api-key --data-file=-
+#        echo -n "your-api-key" | gcloud secrets create api-key --data-file=-
+#   5. Grant Cloud Run runtime SA access to both secrets.
+#
+# Trigger from a GitHub push (automatic) or manually:
+#   gcloud builds submit --config=cloudbuild.yaml
+#
+# Substitution variables (override with --substitutions=_REGION=...):
+#   _REGION   default us-central1
+#   _REPO     default corpusai
+
+substitutions:
+  _REGION: us-central1
+  _REPO: corpusai
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+
+steps:
+  # --- Backend ---
+  - id: build-backend
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/backend:$SHORT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/backend:latest
+      - ./backend
+
+  - id: push-backend
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/backend
+
+  - id: deploy-backend
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - corpusai-backend
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/backend:$SHORT_SHA
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=8000
+      - --memory=1Gi
+      - --cpu=1
+      - --timeout=600
+      - --concurrency=20
+      - --set-secrets=ANTHROPIC_API_KEY=anthropic-api-key:latest,API_KEY=api-key:latest
+
+  # --- Frontend ---
+  - id: get-backend-url
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud run services describe corpusai-backend \
+          --region=${_REGION} --format='value(status.url)' > /workspace/backend_url.txt
+    waitFor: ["deploy-backend"]
+
+  - id: build-frontend
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        BACKEND_URL=$(cat /workspace/backend_url.txt)
+        docker build \
+          --build-arg NEXT_PUBLIC_API_URL=$$BACKEND_URL \
+          -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/frontend:$SHORT_SHA \
+          -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/frontend:latest \
+          ./frontend
+    waitFor: ["get-backend-url"]
+
+  - id: push-frontend
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/frontend
+
+  - id: deploy-frontend
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - corpusai-frontend
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/frontend:$SHORT_SHA
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=3000
+      - --memory=512Mi
+      - --cpu=1
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/backend:$SHORT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/frontend:$SHORT_SHA

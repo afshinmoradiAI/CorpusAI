@@ -1,0 +1,29 @@
+# AWS App Runner configuration for the CorpusAI frontend (Next.js).
+#
+# Usage:
+#   1. Push this repo to GitHub.
+#   2. In the AWS Console, create an App Runner service from this repo.
+#   3. Choose "Use configuration file" and point at frontend/apprunner.yaml.
+#   4. Set NEXT_PUBLIC_API_URL to the backend's App Runner URL.
+#
+# Docs: https://docs.aws.amazon.com/apprunner/latest/dg/config-file.html
+
+version: 1.0
+runtime: docker
+build:
+  commands:
+    build:
+      - echo "Image is built from frontend/Dockerfile"
+run:
+  runtime-version: latest
+  command: node server.js
+  network:
+    port: 3000
+    env: PORT
+  env:
+    - name: NODE_ENV
+      value: "production"
+    - name: NEXT_TELEMETRY_DISABLED
+      value: "1"
+  # Set in App Runner console:
+  #   NEXT_PUBLIC_API_URL  (the backend's public URL)
