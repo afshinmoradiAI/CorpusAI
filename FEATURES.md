@@ -84,6 +84,17 @@ Legend: ✅ shipped · ⚠️ partial · ❌ deferred
 - ❌ Workflow resume from checkpoint
 - ❌ Background job queue (Celery / Arq) for very long runs
 
+## 9b. Document generation / Output formats
+- ✅ Markdown assembly as canonical intermediate format
+- ✅ Citation marker rewriting (`[ref=ID]` → `[N]`) at assembly time
+- ✅ DOCX export with consistent typography (Times New Roman, configurable sizes)
+- ✅ Embedded figures in DOCX (`python-docx add_picture`)
+- ✅ Inline figure markers (`[fig=ID]`) + block placement markers (`<<FIG=ID>>`)
+- ✅ Global figure renumbering at assembly time
+- ✅ Graceful fallback when a referenced figure is missing (no crash)
+- ❌ PDF export (LaTeX or weasyprint)
+- ❌ HTML export with print stylesheet
+
 ## 10. API design
 - ✅ FastAPI + Pydantic
 - ✅ All routes async

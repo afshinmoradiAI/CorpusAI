@@ -11,7 +11,7 @@ If you're new to the codebase, read this top-to-bottom — it doubles as a map o
 ### PydanticAI
 - **What:** Type-safe wrapper for LLM agents. Every agent returns a validated Pydantic model — no manual JSON parsing.
 - **Why:** Agents naturally produce structured output; PydanticAI enforces it. Less boilerplate than the Anthropic SDK, smaller than LangChain, and **MCP is first-class**.
-- **Where:** [`backend/app/agents/base.py`](backend/app/agents/base.py). All 18 agents inherit from `BaseAgent` and only need to declare `prompt_name`, `output_model`, and a `render_input()` method.
+- **Where:** [`backend/app/agents/base.py`](backend/app/agents/base.py). All 26 agents inherit from `BaseAgent` and only need to declare `prompt_name`, `output_model`, and a `render_input()` method.
 - **Alternatives considered:** Microsoft Agent Framework (was here originally — added almost no value, only wrapped the SDK), LangGraph (too heavy), raw Anthropic SDK (more boilerplate, no MCP).
 
 ### BaseAgent contract
@@ -125,7 +125,7 @@ If you're new to the codebase, read this top-to-bottom — it doubles as a map o
 
 ### Anthropic prompt caching
 - **What:** Each agent's system prompt is marked for caching. Repeat calls within 5 minutes pay ~10% of the input-token cost for the prompt.
-- **Why:** All 18 agents have long static system prompts. After the first call, every subsequent call is ~70% cheaper on input.
+- **Why:** All 26 agents have long static system prompts. After the first call, every subsequent call is ~70% cheaper on input.
 - **Where:** [`base.py`](backend/app/agents/base.py): `AnthropicModelSettings(anthropic_cache_instructions=True)`.
 - **Trade-off:** Caching costs 25% more on first write — so it only pays off if you call the same agent at least twice within 5 minutes. Workflows naturally do this.
 
@@ -161,10 +161,24 @@ If you're new to the codebase, read this top-to-bottom — it doubles as a map o
 
 ## 7. Workflows & streaming
 
-### Two pipelines, async generators
+### Five pipelines, async generators
 - `run_explore` — Topic → analyse → search → summarise (parallel) → gap → idea → method → discussion → done
 - `run_write` — Set_id → 5 section writers (sequential) → format references → assemble paper → 3 reviewers (parallel) → synthesise → done
-- **Where:** [`workflows/explore.py`](backend/app/workflows/explore.py), [`workflows/write.py`](backend/app/workflows/write.py).
+- `run_nhmrc` — Topic (+ optional PDFs) → Burden → Aims → Methods → Consumer Involvement → Impact → Synopsis (written last) → done. Supports all NHMRC schemes (Ideas, Investigator, Synergy, Partnership, Clinical Trial, Postgraduate) and five study types.
+- `run_arc` — Topic (+ optional PDFs) → Significance → Innovation → Aims → Approach → National Benefit → Project Description (written last, placed first) → done. Supports all ARC schemes (Discovery, Linkage, Laureate, DECRA, Future, Centre) and four innovation types.
+- `run_thesis` — Title + 1–15 chapters (each with optional notes/PDFs/figures) → chapter-by-chapter generation → ThesisAbstractWriter synthesises the abstract last → done. Chapter titles auto-fill by position (Chapter 1 = Introduction, last chapter = Conclusion, middle cycles through Literature Review / Methodology / Results / Discussion).
+- **Where:** [`workflows/explore.py`](backend/app/workflows/explore.py), [`workflows/write.py`](backend/app/workflows/write.py), [`workflows/nhmrc.py`](backend/app/workflows/nhmrc.py), [`workflows/arc.py`](backend/app/workflows/arc.py), [`workflows/thesis.py`](backend/app/workflows/thesis.py).
+
+### Figures (Thesis mode)
+- **What:** Users upload images per chapter via `POST /api/thesis/upload-figure`. The writer is told which figures are available (with captions) and emits `[fig=ID]` inline references and `<<FIG=ID>>` block markers in its output. The assembler renumbers them globally (Figure 1, 2, …) using order-of-first-mention, replaces inline markers with `Figure N`, and replaces block markers with a markdown image embed + caption block.
+- **Why:** Users want figures placed *where the chapter talks about them*, not at the end. Letting the LLM choose placement (via markers) keeps the writing natural; the assembler handles global numbering so the writer doesn't have to know what figure index it's at.
+- **Where:** [`services/figure_store.py`](backend/app/services/figure_store.py) (on-disk store), [`workflows/thesis.py`](backend/app/workflows/thesis.py) (assembler logic), [`services/docx_export.py`](backend/app/services/docx_export.py) (resolves IDs and embeds pictures).
+- **Public endpoint caveat:** `GET /api/thesis/figure/{id}` is **public** (not behind `X-API-Key`). Browser `<img>` tags can't send custom headers, so security relies on the 128-bit UUID4 figure_id being unguessable.
+
+### DOCX export (Times New Roman, shared across all five modes)
+- **What:** A single markdown→DOCX walker handles the assembled output of every pipeline. Headings map to Word styles (Heading 0/1/2), the body uses Times New Roman 12pt, headings 14/13/12pt.
+- **For Thesis only:** When it encounters a `![Figure N](/api/thesis/figure/<id>)` markdown line, it resolves the ID through `figure_store.path_for()` and calls `doc.add_picture(path, width=Inches(5.5))`. Missing files fall back to a `[Figure unavailable: ...]` placeholder rather than crashing the export.
+- **Where:** [`services/docx_export.py`](backend/app/services/docx_export.py). Wired through `POST /api/paper/export/docx`, which the frontend's `ExportButtons` calls for every pipeline.
 
 ### Server-sent events
 - **What:** Both pipelines yield typed events (`started`, `section_completed`, `completed`, `error`, …). The API wraps them in SSE.
@@ -199,7 +213,8 @@ The **Model Context Protocol** is an open standard for connecting LLMs to extern
 ## 9. Frontend
 
 ### Next.js 14 App Router
-- Pages: `app/page.tsx` (the only route) wraps `ModeTabs`, which switches between `ExploreView` and `WriteView`.
+- Pages: `app/page.tsx` (the only route) wraps `ModeTabs`, which switches between five views: `ExploreView`, `WriteView`, `NHMRCView`, `ARCView`, and `ThesisView`. Each lives under `components/<mode>/`.
+- The Thesis view has the most complex UI: dynamic chapter rows (add/remove), per-chapter PDF uploader, per-chapter figure picker with caption editor.
 
 ### Settings dialog
 - **What:** Modal where users paste their API key and (optionally) a User ID. Stored in `localStorage`.
@@ -225,9 +240,9 @@ The **Model Context Protocol** is an open standard for connecting LLMs to extern
 - **Why:** Caught regressions during the PydanticAI migration. Cheap insurance.
 - **Where:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
-### Test suite (36 tests)
+### Test suite (48 tests)
 - **Agents:** mocked `BaseAgent.run`, verifies render + parse
-- **Workflows:** mocked LLM, exercises full event sequence (including the new `usage` event)
+- **Workflows:** mocked LLM, exercises full event sequence (including the new `usage` event). Coverage includes Explore, Write, NHMRC, ARC, and Thesis workflows; thesis tests also assert figure marker rewriting and auto-titles.
 - **Services:** real BM25 + real SQLite (using `tmp_path`); covers user-scoping + persistence across reopen
 - **API:** real `TestClient`, real handlers, mocked LLM via fixture. Now also covers:
   - `verify_api_key` (401 on missing/wrong key, public `/health`)
@@ -372,7 +387,7 @@ Everything below is **not yet built**. Read this if you plan to expose CorpusAI 
 
 ### Documentation gaps
 - No "how does a non-technical user get started" guide.
-- No description of what the 18 agents actually do (each has a prompt file — but no overview).
+- No description of what the 26 agents actually do (each has a prompt file — but no overview).
 
 ### Storage doesn't scale horizontally
 - **Problem:** SQLite is local to the Fly volume. Running 2+ machines means 2+ disjoint databases.
