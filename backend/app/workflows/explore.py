@@ -74,6 +74,7 @@ async def run_explore(
     *,
     paper_limit: int = 8,
     search_fn: SearchFn = search_papers,
+    bm25_index: Any = None,
 ) -> AsyncIterator[ExploreEvent]:
     """Drive the full Explore pipeline, yielding one event per step."""
     yield ExploreEvent("started", {"topic": request.topic})
@@ -91,7 +92,7 @@ async def run_explore(
     try:
         with usage_scope(settings.max_tokens_per_request) as scope:
             async for event in _run_explore_inner(
-                request, paper_limit=paper_limit, search_fn=search_fn
+                request, paper_limit=paper_limit, search_fn=search_fn, bm25_index=bm25_index
             ):
                 if event.kind == "completed":
                     _result_cache.put(
@@ -117,6 +118,7 @@ async def _run_explore_inner(
     *,
     paper_limit: int,
     search_fn: SearchFn,
+    bm25_index: Any = None,
 ) -> AsyncIterator[ExploreEvent]:
     analysis = await TopicAnalyser().run(request)
     yield ExploreEvent(
@@ -140,6 +142,13 @@ async def _run_explore_inner(
         return
 
     summaries = await _summarise_papers(raw_papers)
+
+    # If the user uploaded reference PDFs, retrieve top chunks and append as
+    # extra summaries so gap-finding and idea-generation are grounded in them.
+    if bm25_index is not None:
+        user_summaries = _chunks_to_summaries(bm25_index, query, k=20)
+        summaries = user_summaries + summaries
+
     yield ExploreEvent("papers_summarised", {"count": len(summaries)})
 
     gap = await GapFinder().run(
@@ -183,6 +192,23 @@ async def _run_explore_inner(
         references=summaries,
     )
     yield ExploreEvent("completed", output.model_dump())
+
+
+def _chunks_to_summaries(bm25_index: Any, query: str, k: int = 20) -> list[PaperSummary]:
+    """Convert BM25 chunk matches into lightweight PaperSummary objects."""
+    try:
+        matches = bm25_index.search(query, k=k)
+    except Exception:
+        return []
+    seen: dict[str, list[str]] = {}
+    for m in matches:
+        title = getattr(m, "filename", None) or getattr(m, "ref_id", "Uploaded reference")
+        text = getattr(m, "text", "")
+        seen.setdefault(title, []).append(text)
+    return [
+        PaperSummary(title=title, findings=chunks[:5])
+        for title, chunks in seen.items()
+    ]
 
 
 async def _summarise_papers(papers: Iterable[RawPaper]) -> list[PaperSummary]:

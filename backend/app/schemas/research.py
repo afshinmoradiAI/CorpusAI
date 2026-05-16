@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 class TopicRequest(BaseModel):
     topic: str = Field(min_length=3, max_length=300)
     sub_field: str | None = Field(default=None, max_length=120)
+    set_id: str | None = Field(default=None, description="Optional uploaded reference set to ground the proposal")
 
 
 class TopicAnalysis(BaseModel):

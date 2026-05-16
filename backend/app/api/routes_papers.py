@@ -40,7 +40,7 @@ class RefSetSummary(BaseModel):
 
 router = APIRouter(prefix="/api/paper", tags=["paper"])
 
-_MAX_FILES = 30
+_MAX_FILES = 100
 _MAX_BYTES_PER_FILE = 25 * 1024 * 1024  # 25 MB
 
 

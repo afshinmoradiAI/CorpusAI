@@ -98,10 +98,10 @@ export function ARCView() {
     <div className="grid md:grid-cols-[360px_1fr] gap-6">
       <aside className="space-y-4">
         <div>
-          <label className="text-sm font-medium block mb-1">Grant topic</label>
+          <label className="text-base font-semibold block mb-2">Grant topic</label>
           <textarea
             rows={2}
-            className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-sm bg-transparent"
+            className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
             placeholder="e.g. Quantifying high-angle grain boundary effects in additively manufactured Ti-6Al-4V fatigue"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
@@ -110,9 +110,9 @@ export function ARCView() {
         </div>
 
         <div>
-          <label className="text-sm font-medium block mb-1">ARC scheme</label>
+          <label className="text-base font-semibold block mb-2">ARC scheme</label>
           <select
-            className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-sm bg-transparent"
+            className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
             value={scheme}
             onChange={(e) => setScheme(e.target.value as ARCScheme)}
             disabled={running}
@@ -126,9 +126,9 @@ export function ARCView() {
         </div>
 
         <div>
-          <label className="text-sm font-medium block mb-1">Innovation type</label>
+          <label className="text-base font-semibold block mb-2">Innovation type</label>
           <select
-            className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-sm bg-transparent"
+            className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
             value={innovationType}
             onChange={(e) =>
               setInnovationType(e.target.value as InnovationType)
@@ -159,7 +159,7 @@ export function ARCView() {
                 value={discipline}
                 onChange={(e) => setDiscipline(e.target.value)}
                 placeholder="e.g. Materials engineering, linguistics, oceanography"
-                className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-xs bg-transparent"
+                className="w-full rounded border border-[color:var(--gold-line)] p-2 text-sm bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
                 disabled={running}
               />
             </div>
@@ -172,7 +172,7 @@ export function ARCView() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Industry partners, career disruptions, specific risks, prior work to cite"
-                className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-xs bg-transparent"
+                className="w-full rounded border border-[color:var(--gold-line)] p-2 text-sm bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
                 disabled={running}
               />
             </div>
@@ -195,11 +195,11 @@ export function ARCView() {
         <button
           onClick={run}
           disabled={!canRun}
-          className="w-full rounded bg-neutral-900 text-white text-sm py-2 disabled:opacity-50 dark:bg-white dark:text-neutral-900"
+          className="w-full rounded bg-[color:var(--gold)] text-black text-base font-semibold py-3 disabled:opacity-50 hover:bg-[color:var(--gold-bright)] transition"
         >
           {running ? "Drafting…" : "Generate ARC application"}
         </button>
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
 
         <div className="text-sm font-mono space-y-1">
           {SECTION_ORDER.map((s) => (
@@ -214,7 +214,7 @@ export function ARCView() {
 
       <main className="min-w-0 space-y-6">
         {!result && !running && (
-          <p className="text-sm text-neutral-500">
+          <p className="text-base text-neutral-400">
             Enter a topic, choose a scheme and innovation type, then click{" "}
             <em>Generate ARC application</em>.
           </p>

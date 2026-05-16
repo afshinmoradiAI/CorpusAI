@@ -194,10 +194,10 @@ export function ThesisView() {
     <div className="grid lg:grid-cols-[420px_1fr] gap-6">
       <aside className="space-y-4">
         <div>
-          <label className="text-sm font-medium block mb-1">Thesis title</label>
+          <label className="text-base font-semibold block mb-2">Thesis title</label>
           <textarea
             rows={2}
-            className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-sm bg-transparent"
+            className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
             placeholder="e.g. The role of mitochondrial dynamics in T-cell exhaustion"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -207,22 +207,22 @@ export function ThesisView() {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-sm font-medium block mb-1">Discipline</label>
+            <label className="text-base font-semibold block mb-2">Discipline</label>
             <input
               type="text"
               value={discipline}
               onChange={(e) => setDiscipline(e.target.value)}
               placeholder="e.g. Immunology"
-              className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-sm bg-transparent"
+              className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
               disabled={running}
             />
           </div>
           <div>
-            <label className="text-sm font-medium block mb-1">Structure</label>
+            <label className="text-base font-semibold block mb-2">Structure</label>
             <select
               value={structure}
               onChange={(e) => setStructure(e.target.value as ThesisStructure)}
-              className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-sm bg-transparent"
+              className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
               disabled={running}
             >
               {(Object.keys(THESIS_STRUCTURE_LABELS) as ThesisStructure[]).map(
@@ -250,14 +250,14 @@ export function ThesisView() {
           />
         </div>
 
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">
+        <div className="flex items-center justify-between pt-2">
+          <span className="text-base font-semibold text-[color:var(--gold-bright)]">
             Chapters ({chapters.length})
           </span>
           <button
             onClick={addChapter}
             disabled={running || chapters.length >= MAX_CHAPTERS}
-            className="text-xs rounded border border-neutral-300 dark:border-neutral-700 px-2 py-1 disabled:opacity-50"
+            className="text-sm font-medium rounded border border-[color:var(--gold-line)] text-[color:var(--gold)] px-3 py-1.5 hover:bg-[color:var(--gold-faint)] transition disabled:opacity-50"
           >
             + Add chapter
           </button>
@@ -287,11 +287,11 @@ export function ThesisView() {
         <button
           onClick={run}
           disabled={!canRun}
-          className="w-full rounded bg-neutral-900 text-white text-sm py-2 disabled:opacity-50 dark:bg-white dark:text-neutral-900"
+          className="w-full rounded bg-[color:var(--gold)] text-black text-base font-semibold py-3 disabled:opacity-50 hover:bg-[color:var(--gold-bright)] transition"
         >
           {running ? "Drafting thesis…" : "Generate thesis"}
         </button>
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
 
         <div className="text-sm font-mono space-y-1">
           {chapters.map((c, i) => (
@@ -332,6 +332,60 @@ export function ThesisView() {
   );
 }
 
+// Per-chapter visual themes — rotated by index so each chapter has a
+// distinct accent colour, badge, and border style. Makes a long list
+// of chapters easier to scan.
+const CHAPTER_THEMES = [
+  {
+    name: "gold",
+    badge: "bg-[color:var(--gold)] text-black",
+    border: "border-[color:var(--gold)]",
+    accent: "text-[color:var(--gold-bright)]",
+    bg: "bg-gradient-to-br from-[rgba(212,175,55,0.10)] to-transparent",
+    ring: "shadow-[0_0_0_1px_rgba(212,175,55,0.35)]",
+  },
+  {
+    name: "emerald",
+    badge: "bg-emerald-400 text-black",
+    border: "border-emerald-500/60",
+    accent: "text-emerald-300",
+    bg: "bg-gradient-to-br from-emerald-500/10 to-transparent",
+    ring: "shadow-[0_0_0_1px_rgba(16,185,129,0.35)]",
+  },
+  {
+    name: "sky",
+    badge: "bg-sky-400 text-black",
+    border: "border-sky-500/60",
+    accent: "text-sky-300",
+    bg: "bg-gradient-to-br from-sky-500/10 to-transparent",
+    ring: "shadow-[0_0_0_1px_rgba(56,189,248,0.35)]",
+  },
+  {
+    name: "rose",
+    badge: "bg-rose-400 text-black",
+    border: "border-rose-500/60",
+    accent: "text-rose-300",
+    bg: "bg-gradient-to-br from-rose-500/10 to-transparent",
+    ring: "shadow-[0_0_0_1px_rgba(244,63,94,0.35)]",
+  },
+  {
+    name: "violet",
+    badge: "bg-violet-400 text-black",
+    border: "border-violet-500/60",
+    accent: "text-violet-300",
+    bg: "bg-gradient-to-br from-violet-500/10 to-transparent",
+    ring: "shadow-[0_0_0_1px_rgba(167,139,250,0.35)]",
+  },
+  {
+    name: "amber",
+    badge: "bg-amber-400 text-black",
+    border: "border-amber-500/60",
+    accent: "text-amber-300",
+    bg: "bg-gradient-to-br from-amber-500/10 to-transparent",
+    ring: "shadow-[0_0_0_1px_rgba(245,158,11,0.35)]",
+  },
+];
+
 function ChapterCard({
   index,
   chapter,
@@ -357,19 +411,33 @@ function ChapterCard({
   onRemoveFigure: (figIdx: number) => void;
   onRemove: () => void;
 }) {
+  const theme = CHAPTER_THEMES[index % CHAPTER_THEMES.length];
   return (
-    <div className="border border-neutral-200 dark:border-neutral-800 rounded p-3 space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs text-neutral-500">
-          Chapter {index + 1}
-          {progress === "done" && " ✓"}
-          {progress === "active" && " …"}
-        </span>
+    <div
+      className={`relative rounded-lg p-4 space-y-3 border ${theme.border} ${theme.bg} bg-black/40 overflow-hidden`}
+    >
+      {/* Coloured left rail */}
+      <div
+        className={`absolute left-0 top-0 bottom-0 w-1 ${theme.badge.split(" ")[0]}`}
+      />
+      <div className="flex items-center justify-between gap-2 pl-2">
+        <div className="flex items-center gap-2.5">
+          <span
+            className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${theme.badge}`}
+          >
+            {index + 1}
+          </span>
+          <span className={`text-base font-semibold ${theme.accent}`}>
+            Chapter {index + 1}
+            {progress === "done" && " ✓"}
+            {progress === "active" && " …"}
+          </span>
+        </div>
         {canRemove && (
           <button
             onClick={onRemove}
             disabled={running}
-            className="text-xs text-neutral-500 hover:text-red-600"
+            className="text-sm text-neutral-400 hover:text-red-400 transition"
           >
             Remove
           </button>
@@ -380,7 +448,7 @@ function ChapterCard({
         value={chapter.title ?? ""}
         onChange={(e) => onChange({ title: e.target.value || null })}
         placeholder={`Title (leave blank for auto)`}
-        className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-sm bg-transparent"
+        className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
         disabled={running}
       />
       <textarea
@@ -388,40 +456,40 @@ function ChapterCard({
         value={chapter.notes ?? ""}
         onChange={(e) => onChange({ notes: e.target.value || null })}
         placeholder="What this chapter should cover (optional)"
-        className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-xs bg-transparent"
+        className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
         disabled={running}
       />
 
-      <details className="text-xs">
-        <summary className="cursor-pointer select-none text-neutral-600 dark:text-neutral-400">
+      <details className="text-sm">
+        <summary className="cursor-pointer select-none text-base font-medium text-neutral-200 hover:text-[color:var(--gold-bright)] transition">
           Reference PDFs {chapter.set_id && `✓`}
         </summary>
-        <div className="mt-1">
+        <div className="mt-2">
           <input
             type="file"
             accept="application/pdf"
             multiple
             onChange={(e) => onUploadPdfs(Array.from(e.target.files ?? []))}
             disabled={running || chapter.refUploading}
-            className="block w-full text-xs"
+            className="block w-full text-sm file:mr-3 file:rounded file:border-0 file:bg-[color:var(--gold-faint)] file:px-3 file:py-1.5 file:text-sm file:text-[color:var(--gold-bright)]"
           />
           {chapter.refUploading && (
-            <p className="text-amber-600 mt-0.5">Uploading…</p>
+            <p className="text-sm text-amber-400 mt-1">Uploading…</p>
           )}
           {chapter.refError && (
-            <p className="text-red-600 mt-0.5">{chapter.refError}</p>
+            <p className="text-sm text-red-400 mt-1">{chapter.refError}</p>
           )}
           {chapter.refFilename && (
-            <p className="text-neutral-500 mt-0.5">{chapter.refFilename}</p>
+            <p className="text-sm text-neutral-400 mt-1">{chapter.refFilename}</p>
           )}
         </div>
       </details>
 
-      <details className="text-xs">
-        <summary className="cursor-pointer select-none text-neutral-600 dark:text-neutral-400">
+      <details className="text-sm">
+        <summary className="cursor-pointer select-none text-base font-medium text-neutral-200 hover:text-[color:var(--gold-bright)] transition">
           Figures ({chapter.figures.length})
         </summary>
-        <div className="mt-1 space-y-2">
+        <div className="mt-2 space-y-2">
           <input
             type="file"
             accept="image/png,image/jpeg,image/gif,image/webp"
@@ -431,27 +499,27 @@ function ChapterCard({
               e.target.value = "";
             }}
             disabled={running || chapter.figureUploading}
-            className="block w-full text-xs"
+            className="block w-full text-sm file:mr-3 file:rounded file:border-0 file:bg-[color:var(--gold-faint)] file:px-3 file:py-1.5 file:text-sm file:text-[color:var(--gold-bright)]"
           />
           {chapter.figureUploading && (
-            <p className="text-amber-600">Uploading figure…</p>
+            <p className="text-sm text-amber-400">Uploading figure…</p>
           )}
           {chapter.figureError && (
-            <p className="text-red-600">{chapter.figureError}</p>
+            <p className="text-sm text-red-400">{chapter.figureError}</p>
           )}
           {chapter.figures.map((f, j) => (
             <div
               key={f.figure_id}
-              className="border-l-2 border-neutral-300 dark:border-neutral-700 pl-2 space-y-1"
+              className="border-l-2 border-[color:var(--gold-line)] pl-3 space-y-1.5 py-1"
             >
               <div className="flex justify-between items-center">
-                <span className="truncate text-neutral-500">
+                <span className="truncate text-sm text-neutral-300">
                   Fig {j + 1}: {f.filename ?? f.figure_id.slice(0, 8)}
                 </span>
                 <button
                   onClick={() => onRemoveFigure(j)}
                   disabled={running}
-                  className="text-neutral-400 hover:text-red-600"
+                  className="text-sm text-neutral-400 hover:text-red-400 transition px-1"
                 >
                   ×
                 </button>
@@ -461,7 +529,7 @@ function ChapterCard({
                 value={f.caption ?? ""}
                 onChange={(e) => onUpdateCaption(j, e.target.value)}
                 placeholder="Caption (optional)"
-                className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-1 text-xs bg-transparent"
+                className="w-full rounded border border-[color:var(--gold-line)] p-2 text-sm bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
                 disabled={running}
               />
             </div>

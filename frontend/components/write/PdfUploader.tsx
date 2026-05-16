@@ -32,8 +32,8 @@ export function PdfUploader({ refSet, onUploaded, disabled }: Props) {
 
   return (
     <div>
-      <label className="text-sm font-medium block mb-1">
-        Reference PDFs <span className="text-neutral-400 text-xs">(up to 30, 25 MB each)</span>
+      <label className="text-base font-semibold block mb-1">
+        Reference PDFs <span className="text-neutral-400 text-sm">(1–100 papers, 25 MB each)</span>
       </label>
       <input
         type="file"

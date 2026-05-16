@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CorpusAI — biology research assistant",
+  title: "CorpusAI — Academic Multi-Agent Assistant",
   description:
-    "Multi-agent biology research assistant. Generate ideas from a topic or write a paper from your reference PDFs.",
+    "Generate research proposals, scientific papers, NHMRC and ARC grant applications, and full theses with a team of specialised AI agents.",
 };
 
 export default function RootLayout({
@@ -28,7 +28,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col text-[color:var(--foreground)]">
+        {children}
+      </body>
     </html>
   );
 }

@@ -123,10 +123,10 @@ export function WriteView() {
           disabled={running}
         />
         <div>
-          <label className="text-sm font-medium block mb-1">Paper topic</label>
+          <label className="text-base font-semibold block mb-2">Paper topic</label>
           <textarea
             rows={2}
-            className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-sm bg-transparent"
+            className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
             placeholder="e.g. Mitochondrial dynamics in T-cell exhaustion"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
@@ -168,24 +168,24 @@ export function WriteView() {
         <button
           onClick={run}
           disabled={!canRun}
-          className="w-full rounded bg-neutral-900 text-white text-sm py-2 disabled:opacity-50 dark:bg-white dark:text-neutral-900"
+          className="w-full rounded bg-[color:var(--gold)] text-black text-base font-semibold py-3 disabled:opacity-50 hover:bg-[color:var(--gold-bright)] transition"
         >
           {running ? "Writing…" : "Generate paper"}
         </button>
         {!refSet && (
-          <p className="text-xs text-neutral-500">
+          <p className="text-sm text-neutral-400">
             Upload at least one reference PDF to begin.
           </p>
         )}
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
 
         <ProgressView selected={selected} progress={progress} />
       </aside>
 
       <main className="min-w-0 space-y-6">
         {!result && !running && (
-          <p className="text-sm text-neutral-500">
-            Upload references, choose sections, and click <em>Generate paper</em>.
+          <p className="text-base text-neutral-400">
+            Upload 1–100 reference PDFs, choose sections, and click <em>Generate paper</em>.
           </p>
         )}
         {result && (
