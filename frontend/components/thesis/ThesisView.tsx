@@ -191,12 +191,12 @@ export function ThesisView() {
   const exportTopic = `Thesis ${title.trim() || "untitled"}`;
 
   return (
-    <div className="grid lg:grid-cols-[420px_1fr] gap-6">
-      <aside className="space-y-4">
-        <div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="lg:col-span-2">
           <label className="text-base font-semibold block mb-2">Thesis title</label>
           <textarea
-            rows={2}
+            rows={3}
             className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
             placeholder="e.g. The role of mitochondrial dynamics in T-cell exhaustion"
             value={title}
@@ -205,18 +205,19 @@ export function ThesisView() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="text-base font-semibold block mb-2">Discipline</label>
-            <input
-              type="text"
-              value={discipline}
-              onChange={(e) => setDiscipline(e.target.value)}
-              placeholder="e.g. Immunology"
-              className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
-              disabled={running}
-            />
-          </div>
+        <div>
+          <label className="text-base font-semibold block mb-2">Discipline</label>
+          <input
+            type="text"
+            value={discipline}
+            onChange={(e) => setDiscipline(e.target.value)}
+            placeholder="e.g. Immunology"
+            className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
+            disabled={running}
+          />
+        </div>
+
+        <div className="space-y-3">
           <div>
             <label className="text-base font-semibold block mb-2">Structure</label>
             <select
@@ -225,109 +226,97 @@ export function ThesisView() {
               className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
               disabled={running}
             >
-              {(Object.keys(THESIS_STRUCTURE_LABELS) as ThesisStructure[]).map(
-                (s) => (
-                  <option key={s} value={s}>
-                    {THESIS_STRUCTURE_LABELS[s]}
-                  </option>
-                ),
-              )}
+              {(Object.keys(THESIS_STRUCTURE_LABELS) as ThesisStructure[]).map((s) => (
+                <option key={s} value={s}>{THESIS_STRUCTURE_LABELS[s]}</option>
+              ))}
             </select>
           </div>
-        </div>
-
-        <div>
-          <label className="text-xs block mb-0.5 text-neutral-500">
-            University structure notes (optional)
-          </label>
-          <textarea
-            rows={2}
-            value={structureNotes}
-            onChange={(e) => setStructureNotes(e.target.value)}
-            placeholder="e.g. UQ HDR thesis must include a foreword listing co-authored work."
-            className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-xs bg-transparent"
-            disabled={running}
-          />
-        </div>
-
-        <div className="flex items-center justify-between pt-2">
-          <span className="text-base font-semibold text-[color:var(--gold-bright)]">
-            Chapters ({chapters.length})
-          </span>
-          <button
-            onClick={addChapter}
-            disabled={running || chapters.length >= MAX_CHAPTERS}
-            className="text-sm font-medium rounded border border-[color:var(--gold-line)] text-[color:var(--gold)] px-3 py-1.5 hover:bg-[color:var(--gold-faint)] transition disabled:opacity-50"
-          >
-            + Add chapter
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          {chapters.map((ch, idx) => (
-            <ChapterCard
-              key={idx}
-              index={idx}
-              chapter={ch}
-              running={running}
-              progress={progress[idx + 1]}
-              canRemove={chapters.length > MIN_CHAPTERS}
-              onChange={(patch) => updateChapter(idx, patch)}
-              onUploadPdfs={(files) => onUploadChapterPdfs(idx, files)}
-              onUploadFigure={(file) => onUploadChapterFigure(idx, file)}
-              onUpdateCaption={(figIdx, caption) =>
-                updateFigureCaption(idx, figIdx, caption)
-              }
-              onRemoveFigure={(figIdx) => removeFigure(idx, figIdx)}
-              onRemove={() => removeChapter(idx)}
+          <div>
+            <label className="text-xs block mb-0.5 text-neutral-500">University structure notes (optional)</label>
+            <textarea
+              rows={2}
+              value={structureNotes}
+              onChange={(e) => setStructureNotes(e.target.value)}
+              placeholder="e.g. UQ HDR thesis must include a foreword listing co-authored work."
+              className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-xs bg-transparent"
+              disabled={running}
             />
-          ))}
+          </div>
         </div>
+      </div>
 
+      <div className="flex items-center justify-between">
+        <span className="text-base font-semibold text-[color:var(--gold-bright)]">
+          Chapters ({chapters.length})
+        </span>
+        <button
+          onClick={addChapter}
+          disabled={running || chapters.length >= MAX_CHAPTERS}
+          className="text-sm font-medium rounded border border-[color:var(--gold-line)] text-[color:var(--gold)] px-3 py-1.5 hover:bg-[color:var(--gold-faint)] transition disabled:opacity-50"
+        >
+          + Add chapter
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        {chapters.map((ch, idx) => (
+          <ChapterCard
+            key={idx}
+            index={idx}
+            chapter={ch}
+            running={running}
+            progress={progress[idx + 1]}
+            canRemove={chapters.length > MIN_CHAPTERS}
+            onChange={(patch) => updateChapter(idx, patch)}
+            onUploadPdfs={(files) => onUploadChapterPdfs(idx, files)}
+            onUploadFigure={(file) => onUploadChapterFigure(idx, file)}
+            onUpdateCaption={(figIdx, caption) => updateFigureCaption(idx, figIdx, caption)}
+            onRemoveFigure={(figIdx) => removeFigure(idx, figIdx)}
+            onRemove={() => removeChapter(idx)}
+          />
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-4">
         <button
           onClick={run}
           disabled={!canRun}
-          className="w-full rounded bg-[color:var(--gold)] text-black text-base font-semibold py-3 disabled:opacity-50 hover:bg-[color:var(--gold-bright)] transition"
+          className="rounded bg-[color:var(--gold)] text-black text-base font-semibold px-8 py-3 disabled:opacity-50 hover:bg-[color:var(--gold-bright)] transition"
         >
           {running ? "Drafting thesis…" : "Generate thesis"}
         </button>
-        {error && <p className="text-sm text-red-400">{error}</p>}
-
-        <div className="text-sm font-mono space-y-1">
+        <div className="text-sm font-mono flex flex-wrap gap-x-4 gap-y-1">
           {chapters.map((c, i) => (
             <Row
               key={i}
               state={progress[i + 1] ?? "pending"}
-              label={`Chapter ${i + 1}${c.title ? `: ${c.title}` : ""}`}
+              label={`Ch ${i + 1}${c.title ? `: ${c.title}` : ""}`}
             />
           ))}
-          <Row state={abstractState} label="Synthesise abstract" />
+          <Row state={abstractState} label="Abstract" />
         </div>
-      </aside>
+      </div>
 
-      <main className="min-w-0 space-y-6">
+      {error && <p className="text-sm text-red-400">{error}</p>}
+
+      <div className="min-w-0 space-y-6">
         {!result && !running && (
           <p className="text-sm text-neutral-500">
-            Set a title, configure chapters, then click{" "}
-            <em>Generate thesis</em>. Per-chapter PDFs and figures are
-            optional.
+            Set a title, configure chapters, then click <em>Generate thesis</em>. Per-chapter PDFs and figures are optional.
           </p>
         )}
         {result && (
           <>
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold">{result.thesis.title}</h2>
-              <ExportButtons
-                markdown={result.thesis.markdown}
-                topic={exportTopic}
-              />
+              <ExportButtons markdown={result.thesis.markdown} topic={exportTopic} />
             </div>
-            <article className="border border-neutral-200 dark:border-neutral-800 rounded p-4 max-h-[75vh] overflow-y-auto">
+            <article className="border border-neutral-200 dark:border-neutral-800 rounded p-4">
               <Markdown>{result.thesis.markdown}</Markdown>
             </article>
           </>
         )}
-      </main>
+      </div>
     </div>
   );
 }

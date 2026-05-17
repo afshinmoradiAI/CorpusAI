@@ -96,12 +96,12 @@ export function NHMRCView() {
   const exportTopic = `NHMRC ${filenameTopic}`;
 
   return (
-    <div className="grid md:grid-cols-[360px_1fr] gap-6">
-      <aside className="space-y-4">
-        <div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="md:col-span-2 lg:col-span-1">
           <label className="text-base font-semibold block mb-2">Grant topic</label>
           <textarea
-            rows={2}
+            rows={3}
             className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
             placeholder="e.g. A targeted T-cell therapy for treatment-resistant rheumatoid arthritis"
             value={topic}
@@ -110,140 +110,113 @@ export function NHMRCView() {
           />
         </div>
 
-        <div>
-          <label className="text-base font-semibold block mb-2">NHMRC scheme</label>
-          <select
-            className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
-            value={scheme}
-            onChange={(e) => setScheme(e.target.value as NHMRCScheme)}
-            disabled={running}
-          >
-            {(Object.keys(NHMRC_SCHEME_LABELS) as NHMRCScheme[]).map((s) => (
-              <option key={s} value={s}>
-                {NHMRC_SCHEME_LABELS[s]}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="text-base font-semibold block mb-2">Study type</label>
-          <select
-            className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
-            value={studyType}
-            onChange={(e) => setStudyType(e.target.value as StudyType)}
-            disabled={running}
-          >
-            {(Object.keys(STUDY_TYPE_LABELS) as StudyType[]).map((s) => (
-              <option key={s} value={s}>
-                {STUDY_TYPE_LABELS[s]}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <details className="text-sm">
-          <summary className="cursor-pointer font-medium select-none">
-            Optional context
-          </summary>
-          <div className="mt-2 space-y-2">
-            <div>
-              <label className="text-xs block mb-0.5 text-neutral-500">
-                Health condition
-              </label>
-              <input
-                type="text"
-                value={healthCondition}
-                onChange={(e) => setHealthCondition(e.target.value)}
-                placeholder="e.g. Treatment-resistant depression"
-                className="w-full rounded border border-[color:var(--gold-line)] p-2 text-sm bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
-                disabled={running}
-              />
-            </div>
-            <div>
-              <label className="text-xs block mb-0.5 text-neutral-500">
-                Target population
-              </label>
-              <input
-                type="text"
-                value={targetPopulation}
-                onChange={(e) => setTargetPopulation(e.target.value)}
-                placeholder="e.g. Australian adults aged 18–65"
-                className="w-full rounded border border-[color:var(--gold-line)] p-2 text-sm bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
-                disabled={running}
-              />
-            </div>
-            <div>
-              <label className="text-xs block mb-0.5 text-neutral-500">
-                Notes for writers
-              </label>
-              <textarea
-                rows={3}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Named consumers, partner organisations, ATSI involvement, etc."
-                className="w-full rounded border border-[color:var(--gold-line)] p-2 text-sm bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
-                disabled={running}
-              />
-            </div>
+        <div className="space-y-4">
+          <div>
+            <label className="text-base font-semibold block mb-2">NHMRC scheme</label>
+            <select
+              className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
+              value={scheme}
+              onChange={(e) => setScheme(e.target.value as NHMRCScheme)}
+              disabled={running}
+            >
+              {(Object.keys(NHMRC_SCHEME_LABELS) as NHMRCScheme[]).map((s) => (
+                <option key={s} value={s}>{NHMRC_SCHEME_LABELS[s]}</option>
+              ))}
+            </select>
           </div>
-        </details>
+          <div>
+            <label className="text-base font-semibold block mb-2">Study type</label>
+            <select
+              className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
+              value={studyType}
+              onChange={(e) => setStudyType(e.target.value as StudyType)}
+              disabled={running}
+            >
+              {(Object.keys(STUDY_TYPE_LABELS) as StudyType[]).map((s) => (
+                <option key={s} value={s}>{STUDY_TYPE_LABELS[s]}</option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-        <details className="text-sm">
-          <summary className="cursor-pointer font-medium select-none">
-            Reference PDFs (optional)
-          </summary>
-          <div className="mt-2">
-            <PdfUploader
-              refSet={refSet}
-              onUploaded={setRefSet}
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs block mb-0.5 text-neutral-500">Health condition</label>
+            <input
+              type="text"
+              value={healthCondition}
+              onChange={(e) => setHealthCondition(e.target.value)}
+              placeholder="e.g. Treatment-resistant depression"
+              className="w-full rounded border border-[color:var(--gold-line)] p-2 text-sm bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
               disabled={running}
             />
           </div>
-        </details>
+          <div>
+            <label className="text-xs block mb-0.5 text-neutral-500">Target population</label>
+            <input
+              type="text"
+              value={targetPopulation}
+              onChange={(e) => setTargetPopulation(e.target.value)}
+              placeholder="e.g. Australian adults aged 18–65"
+              className="w-full rounded border border-[color:var(--gold-line)] p-2 text-sm bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
+              disabled={running}
+            />
+          </div>
+          <div>
+            <label className="text-xs block mb-0.5 text-neutral-500">Notes for writers</label>
+            <textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Named consumers, partner organisations, ATSI involvement, etc."
+              className="w-full rounded border border-[color:var(--gold-line)] p-2 text-sm bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
+              disabled={running}
+            />
+          </div>
+          <details className="text-sm">
+            <summary className="cursor-pointer font-medium select-none">Reference PDFs (optional)</summary>
+            <div className="mt-2">
+              <PdfUploader refSet={refSet} onUploaded={setRefSet} disabled={running} />
+            </div>
+          </details>
+        </div>
+      </div>
 
+      <div className="flex flex-wrap items-center gap-4">
         <button
           onClick={run}
           disabled={!canRun}
-          className="w-full rounded bg-[color:var(--gold)] text-black text-base font-semibold py-3 disabled:opacity-50 hover:bg-[color:var(--gold-bright)] transition"
+          className="rounded bg-[color:var(--gold)] text-black text-base font-semibold px-8 py-3 disabled:opacity-50 hover:bg-[color:var(--gold-bright)] transition"
         >
           {running ? "Drafting…" : "Generate NHMRC application"}
         </button>
-        {error && <p className="text-sm text-red-400">{error}</p>}
-
-        <div className="text-sm font-mono space-y-1">
+        <div className="text-sm font-mono flex flex-wrap gap-x-6 gap-y-1">
           {SECTION_ORDER.map((s) => (
-            <Row
-              key={s}
-              state={progress[s]}
-              label={`Write ${NHMRC_SECTION_LABELS[s]}`}
-            />
+            <Row key={s} state={progress[s]} label={NHMRC_SECTION_LABELS[s]} />
           ))}
         </div>
-      </aside>
+      </div>
 
-      <main className="min-w-0 space-y-6">
+      {error && <p className="text-sm text-red-400">{error}</p>}
+
+      <div className="min-w-0 space-y-6">
         {!result && !running && (
           <p className="text-base text-neutral-400">
-            Enter a topic, choose your scheme, and click{" "}
-            <em>Generate NHMRC application</em>.
+            Enter a topic, choose your scheme, and click <em>Generate NHMRC application</em>.
           </p>
         )}
         {result && (
           <>
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold">{result.grant.topic}</h2>
-              <ExportButtons
-                markdown={result.grant.markdown}
-                topic={exportTopic}
-              />
+              <ExportButtons markdown={result.grant.markdown} topic={exportTopic} />
             </div>
-            <article className="border border-neutral-200 dark:border-neutral-800 rounded p-4 max-h-[70vh] overflow-y-auto">
+            <article className="border border-neutral-200 dark:border-neutral-800 rounded p-4">
               <Markdown>{result.grant.markdown}</Markdown>
             </article>
           </>
         )}
-      </main>
+      </div>
     </div>
   );
 }

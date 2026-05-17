@@ -72,8 +72,8 @@ export function ExploreView() {
   }
 
   return (
-    <div className="grid md:grid-cols-[360px_1fr] gap-8">
-      <aside className="space-y-5">
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="text-base font-semibold block mb-2">Research topic</label>
           <textarea
@@ -96,27 +96,29 @@ export function ExploreView() {
           </p>
           <PdfUploader refSet={refSet} onUploaded={setRefSet} disabled={running} />
         </div>
+      </div>
 
+      <div className="flex flex-wrap items-center gap-4">
         <button
           onClick={run}
           disabled={running || !topic.trim()}
-          className="w-full rounded bg-[color:var(--gold)] text-black text-base font-semibold py-3 disabled:opacity-50 hover:bg-[color:var(--gold-bright)] transition"
+          className="rounded bg-[color:var(--gold)] text-black text-base font-semibold px-8 py-3 disabled:opacity-50 hover:bg-[color:var(--gold-bright)] transition"
         >
           {running ? "Generating…" : "Generate proposal"}
         </button>
-
         <StreamLog
           steps={STEP_LABELS.map((s, i) => ({ label: s.label, state: steps[i] }))}
         />
-        {paperCount !== null && (
-          <p className="text-sm text-neutral-400">{paperCount} papers retrieved from literature</p>
-        )}
-        {error && (
-          <p className="text-sm text-red-400">Error: {error}</p>
-        )}
-      </aside>
+      </div>
 
-      <main className="min-w-0">
+      {paperCount !== null && (
+        <p className="text-sm text-neutral-400">{paperCount} papers retrieved from literature</p>
+      )}
+      {error && (
+        <p className="text-sm text-red-400">Error: {error}</p>
+      )}
+
+      <div className="min-w-0">
         {!result && !running && (
           <p className="text-base text-neutral-400">
             Enter a topic and click <em>Generate proposal</em>. Steps stream as they complete.
@@ -124,7 +126,7 @@ export function ExploreView() {
           </p>
         )}
         {result && <ExploreResult result={result} />}
-      </main>
+      </div>
     </div>
   );
 }

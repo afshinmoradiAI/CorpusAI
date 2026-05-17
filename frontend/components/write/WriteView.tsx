@@ -115,17 +115,15 @@ export function WriteView() {
   }
 
   return (
-    <div className="grid md:grid-cols-[360px_1fr] gap-6">
-      <aside className="space-y-4">
-        <PdfUploader
-          refSet={refSet}
-          onUploaded={setRefSet}
-          disabled={running}
-        />
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="md:col-span-1">
+          <PdfUploader refSet={refSet} onUploaded={setRefSet} disabled={running} />
+        </div>
         <div>
           <label className="text-base font-semibold block mb-2">Paper topic</label>
           <textarea
-            rows={2}
+            rows={3}
             className="w-full rounded border border-[color:var(--gold-line)] p-3 text-base bg-transparent focus:outline-none focus:border-[color:var(--gold)] transition"
             placeholder="e.g. Mitochondrial dynamics in T-cell exhaustion"
             value={topic}
@@ -133,56 +131,59 @@ export function WriteView() {
             disabled={running}
           />
         </div>
-        <SectionSelector selected={selected} onChange={setSelected} disabled={running} />
-        <details className="text-sm">
-          <summary className="cursor-pointer font-medium select-none">
-            Optional context
-          </summary>
-          <div className="mt-2 space-y-2">
-            <div>
-              <label className="text-xs block mb-0.5 text-neutral-500">
-                Your results / data (paste raw findings here)
-              </label>
-              <textarea
-                rows={3}
-                value={userResults}
-                onChange={(e) => setUserResults(e.target.value)}
-                className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-xs bg-transparent"
-                disabled={running}
-              />
+        <div className="space-y-3">
+          <SectionSelector selected={selected} onChange={setSelected} disabled={running} />
+          <details className="text-sm">
+            <summary className="cursor-pointer font-medium select-none">
+              Optional context
+            </summary>
+            <div className="mt-2 space-y-2">
+              <div>
+                <label className="text-xs block mb-0.5 text-neutral-500">
+                  Your results / data
+                </label>
+                <textarea
+                  rows={3}
+                  value={userResults}
+                  onChange={(e) => setUserResults(e.target.value)}
+                  className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-xs bg-transparent"
+                  disabled={running}
+                />
+              </div>
+              <div>
+                <label className="text-xs block mb-0.5 text-neutral-500">
+                  Notes for writers
+                </label>
+                <textarea
+                  rows={2}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-xs bg-transparent"
+                  disabled={running}
+                />
+              </div>
             </div>
-            <div>
-              <label className="text-xs block mb-0.5 text-neutral-500">
-                Notes for writers
-              </label>
-              <textarea
-                rows={2}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full rounded border border-neutral-300 dark:border-neutral-700 p-2 text-xs bg-transparent"
-                disabled={running}
-              />
-            </div>
-          </div>
-        </details>
+          </details>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-4">
         <button
           onClick={run}
           disabled={!canRun}
-          className="w-full rounded bg-[color:var(--gold)] text-black text-base font-semibold py-3 disabled:opacity-50 hover:bg-[color:var(--gold-bright)] transition"
+          className="rounded bg-[color:var(--gold)] text-black text-base font-semibold px-8 py-3 disabled:opacity-50 hover:bg-[color:var(--gold-bright)] transition"
         >
           {running ? "Writing…" : "Generate paper"}
         </button>
-        {!refSet && (
-          <p className="text-sm text-neutral-400">
-            Upload at least one reference PDF to begin.
-          </p>
-        )}
-        {error && <p className="text-sm text-red-400">{error}</p>}
-
         <ProgressView selected={selected} progress={progress} />
-      </aside>
+      </div>
 
-      <main className="min-w-0 space-y-6">
+      {!refSet && (
+        <p className="text-sm text-neutral-400">Upload at least one reference PDF to begin.</p>
+      )}
+      {error && <p className="text-sm text-red-400">{error}</p>}
+
+      <div className="min-w-0 space-y-6">
         {!result && !running && (
           <p className="text-base text-neutral-400">
             Upload 1–100 reference PDFs, choose sections, and click <em>Generate paper</em>.
@@ -194,7 +195,7 @@ export function WriteView() {
               <h2 className="text-lg font-semibold">{result.paper.topic}</h2>
               <ExportButtons markdown={result.paper.markdown} topic={result.paper.topic} />
             </div>
-            <article className="border border-neutral-200 dark:border-neutral-800 rounded p-4 max-h-[60vh] overflow-y-auto">
+            <article className="border border-neutral-200 dark:border-neutral-800 rounded p-4">
               <Markdown>{result.paper.markdown}</Markdown>
             </article>
             {result.review && (
@@ -207,7 +208,7 @@ export function WriteView() {
             )}
           </>
         )}
-      </main>
+      </div>
     </div>
   );
 }
