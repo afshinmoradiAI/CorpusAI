@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import SettingsDialog from "./SettingsDialog";
+import { getUserId, setUserId, setApiKey } from "@/lib/auth";
 
 const MODES: { href: string; label: string }[] = [
   { href: "/explore", label: "Proposal" },
@@ -15,7 +16,15 @@ const MODES: { href: string; label: string }[] = [
 
 export function TopNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const userName = getUserId();
+
+  function handleSignOut() {
+    setUserId("");
+    setApiKey("");
+    router.replace("/signin");
+  }
 
   return (
     <header className="sticky top-0 z-30 backdrop-blur-md bg-black/60 border-b border-[color:var(--gold-line)]">
@@ -54,11 +63,22 @@ export function TopNav() {
           >
             ← Home
           </Link>
+          {userName && (
+            <span className="hidden md:block text-sm text-neutral-400 border-l border-[color:var(--gold-line)] pl-3">
+              {userName}
+            </span>
+          )}
           <button
             onClick={() => setSettingsOpen(true)}
             className="rounded border border-[color:var(--gold-line)] px-4 py-1.5 text-sm text-[color:var(--gold)] hover:bg-[color:var(--gold-faint)] transition"
           >
             Settings
+          </button>
+          <button
+            onClick={handleSignOut}
+            className="rounded border border-neutral-700 px-4 py-1.5 text-sm text-neutral-400 hover:text-red-400 hover:border-red-400/50 transition"
+          >
+            Sign out
           </button>
         </div>
       </div>
