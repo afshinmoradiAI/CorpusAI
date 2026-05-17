@@ -263,7 +263,7 @@ export function ThesisView() {
           </button>
         </div>
 
-        <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
+        <div className="grid grid-cols-2 gap-3">
           {chapters.map((ch, idx) => (
             <ChapterCard
               key={idx}

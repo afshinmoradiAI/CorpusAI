@@ -69,20 +69,19 @@ export default function Home() {
           <p className="eyebrow mb-8">
             Multi-agent academic writing
           </p>
-          <h1 className="font-display text-7xl md:text-9xl font-semibold leading-[0.92] mb-8">
+          <h1 className="font-display text-5xl md:text-7xl font-semibold leading-[0.92] mb-6">
             <span className="text-gold-gradient">CorpusAI</span>
           </h1>
-          <p className="font-display text-3xl md:text-5xl text-neutral-50 mb-10 leading-tight max-w-5xl mx-auto">
+          <p className="font-display text-2xl md:text-3xl text-neutral-50 mb-8 leading-tight max-w-5xl mx-auto">
             From a single idea to a publishable manuscript —
             <span className="text-[color:var(--gold-bright)]">
               {" "}drafted by a team of specialised AI agents.
             </span>
           </p>
-          <p className="text-xl md:text-2xl text-neutral-200 max-w-3xl mx-auto mb-14 leading-relaxed">
+          <p className="text-base md:text-lg text-neutral-200 max-w-3xl mx-auto mb-12 leading-relaxed">
             Five purpose-built pipelines for biomedical and academic research:
             proposals, scientific papers, NHMRC grants, ARC grants, and full
-            theses. Times New Roman .docx export. Figure embedding.
-            Citation handling. All in your browser.
+            theses.
           </p>
 
           <div className="flex flex-wrap justify-center gap-5 mb-14">
@@ -91,12 +90,6 @@ export default function Home() {
               className="px-9 py-4 rounded-md bg-[color:var(--gold)] text-black text-lg font-semibold hover:bg-[color:var(--gold-bright)] transition shadow-xl shadow-[color:var(--gold-faint)]"
             >
               Start with a topic →
-            </Link>
-            <Link
-              href="/write"
-              className="px-9 py-4 rounded-md border-2 border-[color:var(--gold)] text-[color:var(--gold-bright)] text-lg font-semibold hover:bg-[color:var(--gold-faint)] transition"
-            >
-              Upload your references
             </Link>
           </div>
 
@@ -124,10 +117,10 @@ export default function Home() {
             <p className="eyebrow mb-4">
               Pipelines
             </p>
-            <h2 className="font-display text-5xl md:text-6xl font-semibold mb-4">
+            <h2 className="font-display text-4xl md:text-5xl font-semibold mb-4">
               Choose your <span className="text-gold-gradient">workflow</span>
             </h2>
-            <p className="text-lg md:text-xl text-neutral-300 max-w-3xl mx-auto">
+            <p className="text-base md:text-lg text-neutral-300 max-w-3xl mx-auto">
               Each pipeline is a coordinated team of agents. Pick the artefact
               you want to produce — we handle the rest.
             </p>
@@ -170,10 +163,10 @@ export default function Home() {
           <p className="eyebrow mb-4">
             Built for the lab
           </p>
-          <h2 className="font-display text-4xl md:text-5xl font-semibold mb-6">
+          <h2 className="font-display text-3xl md:text-4xl font-semibold mb-6">
             <span className="text-gold-gradient">Designed by researchers, for researchers.</span>
           </h2>
-          <p className="text-lg md:text-xl text-neutral-200 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base md:text-lg text-neutral-200 max-w-3xl mx-auto leading-relaxed">
             CorpusAI mirrors how a research group actually works: a topic
             analyst, a literature reviewer, a gap finder, an idea generator,
             a methods designer, section writers, and three independent peer
@@ -187,7 +180,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <p className="eyebrow mb-3">What you get</p>
-            <h2 className="font-display text-4xl md:text-5xl font-semibold">
+            <h2 className="font-display text-3xl md:text-4xl font-semibold">
               Everything an academic needs
             </h2>
           </div>
