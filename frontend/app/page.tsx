@@ -93,20 +93,6 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-x-10 gap-y-3 text-sm md:text-base text-neutral-300">
-            <span className="flex items-center gap-2">
-              <span className="text-[color:var(--gold)]">✦</span> 26 specialised agents
-            </span>
-            <span className="flex items-center gap-2">
-              <span className="text-[color:var(--gold)]">✦</span> Claude Sonnet 4.6
-            </span>
-            <span className="flex items-center gap-2">
-              <span className="text-[color:var(--gold)]">✦</span> Times New Roman .docx
-            </span>
-            <span className="flex items-center gap-2">
-              <span className="text-[color:var(--gold)]">✦</span> Live streaming output
-            </span>
-          </div>
         </div>
       </section>
 
@@ -214,35 +200,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURE STRIP */}
-      <section className="px-6 py-24">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="eyebrow mb-3">What you get</p>
-            <h2 className="font-display text-3xl md:text-4xl font-semibold">
-              Everything an academic needs
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-7">
-            <FeatureCard
-              icon="⚡"
-              title="Streamed output"
-              description="Watch sections appear one by one as the agents draft them, with token usage and cost shown live."
-            />
-            <FeatureCard
-              icon="📑"
-              title="Times New Roman .docx"
-              description="One-click download. Embedded figures, numbered citations, and consistent typography across every pipeline."
-            />
-            <FeatureCard
-              icon="🧬"
-              title="Grounded in your PDFs"
-              description="Upload 1–100 reference papers — BM25 retrieval pulls the right excerpts into every section."
-            />
-          </div>
-        </div>
-      </section>
-
       <footer className="mt-auto border-t border-[color:var(--gold-line)] py-8 px-6">
         <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 text-sm text-neutral-400">
           <span>
@@ -258,26 +215,6 @@ export default function Home() {
         </div>
       </footer>
     </main>
-  );
-}
-
-function FeatureCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="surface rounded-xl p-7">
-      <div className="text-4xl mb-3">{icon}</div>
-      <h4 className="font-display text-2xl font-semibold text-[color:var(--gold-bright)] mb-2">
-        {title}
-      </h4>
-      <p className="text-base text-neutral-200 leading-relaxed">{description}</p>
-    </div>
   );
 }
 
