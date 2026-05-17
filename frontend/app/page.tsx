@@ -175,6 +175,96 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ARCHITECTURE — the impressive stack section */}
+      <section className="px-6 py-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="eyebrow mb-3">Under the hood</p>
+            <h2 className="font-display text-3xl md:text-4xl font-semibold mb-4">
+              A team of <span className="text-gold-gradient">26 specialists</span> working in concert
+            </h2>
+            <p className="text-base md:text-lg text-neutral-300 max-w-3xl mx-auto">
+              Every agent owns one job, one prompt, and one structured output —
+              orchestrated by five purpose-built workflows.
+            </p>
+          </div>
+
+          {/* Big stats bar */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
+            <StatBlock value="26" label="Specialised agents" />
+            <StatBlock value="5" label="Coordinated pipelines" />
+            <StatBlock value="3-way" label="Peer review + synthesis" />
+            <StatBlock value="2" label="Claude models, smart-routed" />
+          </div>
+
+          {/* Agent roster by role */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
+            <AgentGroup
+              count={17}
+              title="Writers"
+              colour="gold"
+              agents={[
+                "5 paper sections",
+                "6 NHMRC sections",
+                "6 ARC sections",
+                "Thesis chapters + abstract",
+              ]}
+            />
+            <AgentGroup
+              count={4}
+              title="Peer reviewers"
+              colour="emerald"
+              agents={[
+                "Biology reviewer",
+                "Statistics reviewer",
+                "Gap reviewer",
+                "Review synthesiser",
+              ]}
+            />
+            <AgentGroup
+              count={4}
+              title="Analysts"
+              colour="sky"
+              agents={[
+                "Topic analyser",
+                "Gap finder",
+                "Idea generator",
+                "Method designer",
+              ]}
+            />
+            <AgentGroup
+              count={3}
+              title="Support"
+              colour="rose"
+              agents={[
+                "Paper summariser",
+                "Reference formatter",
+                "Discussion writer",
+              ]}
+            />
+          </div>
+
+          {/* Engineering highlights */}
+          <div className="grid md:grid-cols-3 gap-5">
+            <TechCard
+              tag="Multi-model"
+              title="Sonnet 4.6 + Haiku 4.5"
+              body="Writing and reasoning run on Sonnet. Keyword expansion, structured extraction, and citation formatting run on Haiku — faster, cheaper, just as accurate."
+            />
+            <TechCard
+              tag="Type-safe I/O"
+              title="Pydantic everywhere"
+              body="Every agent returns a validated Pydantic model. No regex parsing, no hallucinated fields — the schema is enforced before the next agent sees it."
+            />
+            <TechCard
+              tag="Resilience"
+              title="Cached prompts, retried calls"
+              body="System prompts are cached across runs. Transient 429s and 5xx errors retry automatically with exponential backoff."
+            />
+          </div>
+        </div>
+      </section>
+
       {/* FEATURE STRIP */}
       <section className="px-6 py-24">
         <div className="max-w-6xl mx-auto">
@@ -238,6 +328,103 @@ function FeatureCard({
         {title}
       </h4>
       <p className="text-base text-neutral-200 leading-relaxed">{description}</p>
+    </div>
+  );
+}
+
+function StatBlock({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="surface rounded-xl p-6 text-center border border-[color:var(--gold-line)]">
+      <div className="font-display text-4xl md:text-5xl font-semibold text-gold-gradient mb-1">
+        {value}
+      </div>
+      <div className="text-xs md:text-sm uppercase tracking-widest text-neutral-400">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+const GROUP_COLOURS: Record<
+  string,
+  { badge: string; accent: string; border: string }
+> = {
+  gold: {
+    badge: "bg-[color:var(--gold)] text-black",
+    accent: "text-[color:var(--gold-bright)]",
+    border: "border-[color:var(--gold-line)]",
+  },
+  emerald: {
+    badge: "bg-emerald-400 text-black",
+    accent: "text-emerald-300",
+    border: "border-emerald-500/30",
+  },
+  sky: {
+    badge: "bg-sky-400 text-black",
+    accent: "text-sky-300",
+    border: "border-sky-500/30",
+  },
+  rose: {
+    badge: "bg-rose-400 text-black",
+    accent: "text-rose-300",
+    border: "border-rose-500/30",
+  },
+};
+
+function AgentGroup({
+  count,
+  title,
+  colour,
+  agents,
+}: {
+  count: number;
+  title: string;
+  colour: keyof typeof GROUP_COLOURS;
+  agents: string[];
+}) {
+  const c = GROUP_COLOURS[colour];
+  return (
+    <div className={`surface rounded-xl p-6 border ${c.border}`}>
+      <div className="flex items-center gap-3 mb-4">
+        <span
+          className={`inline-flex items-center justify-center w-12 h-12 rounded-full text-xl font-bold ${c.badge}`}
+        >
+          {count}
+        </span>
+        <h4 className={`font-display text-xl font-semibold ${c.accent}`}>
+          {title}
+        </h4>
+      </div>
+      <ul className="space-y-1.5 text-sm text-neutral-300">
+        {agents.map((a) => (
+          <li key={a} className="flex items-start gap-2">
+            <span className={`mt-1 ${c.accent}`}>›</span>
+            <span>{a}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function TechCard({
+  tag,
+  title,
+  body,
+}: {
+  tag: string;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="surface rounded-xl p-6 border border-[color:var(--gold-line)]">
+      <span className="inline-block text-xs uppercase tracking-widest text-[color:var(--gold)] px-2.5 py-1 rounded-full border border-[color:var(--gold-line)] bg-black/30 mb-4">
+        {tag}
+      </span>
+      <h4 className="font-display text-xl font-semibold text-[color:var(--gold-bright)] mb-2">
+        {title}
+      </h4>
+      <p className="text-sm text-neutral-300 leading-relaxed">{body}</p>
     </div>
   );
 }
